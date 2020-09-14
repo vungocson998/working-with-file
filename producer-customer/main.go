@@ -38,8 +38,9 @@ func main() {
 				go produce(numProd, myChannel, &channelIsFull, &channelIsEmpty)
 			} else {
 				fmt.Printf("Channel is full now!!\n")
+				printChannel(myChannel)
+
 			}
-			printChannel(myChannel)
 			break
 		case 2:
 			if channelIsEmpty == false {
@@ -47,8 +48,9 @@ func main() {
 				fmt.Printf("You consumed number: %d\n", numCon)
 			} else {
 				fmt.Printf("Channel is empty now!!\n")
+				printChannel(myChannel)
+
 			}
-			printChannel(myChannel)
 			break
 		case 3:
 			fmt.Println("Good bye!!")
@@ -65,6 +67,7 @@ func produce(numProd int, myChannel chan int, channelIsFull *bool, channelIsEmpt
 	if len(myChannel) == cap(myChannel) {
 		*channelIsFull = true
 	}
+	defer printChannel(myChannel)
 }
 
 func consume(numCon *int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool) {
@@ -74,6 +77,8 @@ func consume(numCon *int, myChannel chan int, channelIsFull *bool, channelIsEmpt
 	if len(myChannel) == 0 {
 		*channelIsEmpty = true
 	}
+	defer printChannel(myChannel)
+
 }
 
 func printChannel(myChannel chan int) {
