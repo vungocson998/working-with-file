@@ -12,7 +12,7 @@ func main() {
 
 	var s string
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 10000; i++ {
 		s = strconv.Itoa(rand.Intn(20000)) + "\t"
 		f.WriteString(s)
 	}
