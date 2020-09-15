@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -23,17 +24,24 @@ func main() {
 }
 
 func handleConn(conn *net.TCPConn, clientIndex int) {
-	buffer := make([]byte, 1)
+	buffer := make([]byte, 10)
 
 	for {
-		for {
-			_, e := conn.Read(buffer)
-			if e != nil || buffer[0] == 10 {
-				fmt.Printf("\t[From client %d]\n", clientIndex)
+		c, e := conn.Read(buffer)
+		if e != nil {
+			if e == io.EOF {
+				fmt.Printf("Client %d disconnected!!\n", clientIndex)
 				break
 			} else {
-				fmt.Printf("%s", buffer)
+				break
 			}
+		}
+
+		if c > 0 && buffer[c-1] == 10 {
+			fmt.Printf("%s", buffer[0:c-1])
+			fmt.Printf("\t[From client %d]\n", clientIndex)
+		} else {
+			fmt.Printf("%s", buffer[0:c])
 		}
 	}
 
