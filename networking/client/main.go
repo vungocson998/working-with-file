@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"log"
 	"net"
+	"os"
 )
 
 func main() {
@@ -11,9 +14,24 @@ func main() {
 
 	conn, _ := net.DialTCP("tcp", nil, addr)
 
-	buffer := []byte("Hello")
+	reader := bufio.NewReader(os.Stdin)
 
-	conn.Write(buffer)
+	for {
+		fmt.Printf("Input message: ")
+		buffer, err := reader.ReadBytes('\n')
+
+		if err != nil {
+			log.Println("-> Input error :", err)
+			break
+		} else {
+			_, err := conn.Write(buffer)
+			if err != nil {
+				log.Println("-> Send message error :", err)
+			} else {
+				log.Println("-> Send message successfully")
+			}
+		}
+	}
 
 	fmt.Printf("-> Close\n")
 }
