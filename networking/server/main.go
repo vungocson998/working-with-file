@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	var clientIndex int = 0
 	addr, _ := net.ResolveTCPAddr("tcp", "localhost:8000")
 
 	fmt.Printf("Listenning at localhost:8000...\n")
@@ -14,19 +15,21 @@ func main() {
 
 	for {
 		conn, _ := listener.AcceptTCP()
-		go handleConn(conn)
+		clientIndex++
+		fmt.Printf("\nClient %d connected\n", clientIndex)
+		go handleConn(conn, clientIndex)
 	}
 
 }
 
-func handleConn(conn *net.TCPConn) {
+func handleConn(conn *net.TCPConn, clientIndex int) {
 	buffer := make([]byte, 1)
 
 	for {
-		fmt.Printf("\n[Client]: ")
 		for {
 			_, e := conn.Read(buffer)
 			if e != nil || buffer[0] == 10 {
+				fmt.Printf("\t[From client %d]\n", clientIndex)
 				break
 			} else {
 				fmt.Printf("%s", buffer)
