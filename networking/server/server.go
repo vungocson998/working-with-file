@@ -25,6 +25,7 @@ func main() {
 
 func handleConn(conn *net.TCPConn, clientIndex int) {
 	buffer := make([]byte, 10)
+	var cmdRecv string
 
 	for {
 		c, e := conn.Read(buffer)
@@ -38,9 +39,12 @@ func handleConn(conn *net.TCPConn, clientIndex int) {
 		}
 
 		if c > 0 && buffer[c-1] == 10 {
+			cmdRecv = cmdRecv + string(buffer[0:c-1])
 			fmt.Printf("%s", buffer[0:c-1])
 			fmt.Printf("\t[From client %d]\n", clientIndex)
+			fmt.Printf("MESSAGE: %s\n", cmdRecv)
 		} else {
+			cmdRecv = cmdRecv + string(buffer[0:c])
 			fmt.Printf("%s", buffer[0:c])
 		}
 	}

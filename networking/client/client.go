@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -14,24 +15,45 @@ func main() {
 
 	conn, _ := net.DialTCP("tcp", nil, addr)
 
+	sendCmd(conn)
+
+}
+
+func sendCmd(conn *net.TCPConn) {
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Printf("Input message: ")
+		fmt.Printf("Input filepath: ")
 		buffer, err := reader.ReadBytes('\n')
 
 		if err != nil {
 			log.Println("-> Input error :", err)
-			break
 		} else {
-			_, err := conn.Write(buffer)
-			if err != nil {
-				log.Println("-> Send message error :", err)
+			filePath := string(buffer[0 : len(buffer)-1])
+
+			if fileExists(filePath) {
+
+				info, _ := os.Stat(filePath)
+
+				size := strconv.FormatInt(info.Size(), 10)
+
+				message := "SEND" + " " + filePath + " " + size + "\n"
+
+				conn.Write([]byte(message))
+
 			} else {
-				log.Println("-> Send message successfully")
+				fmt.Printf("\nFile %s does not exist (or is a directory)\n", filePath)
 			}
 		}
 	}
 
-	fmt.Printf("-> Close\n")
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
