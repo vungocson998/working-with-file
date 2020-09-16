@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net"
+	"os"
 )
 
 func main() {
@@ -26,23 +28,22 @@ func main() {
 func handleConn(conn *net.TCPConn, clientIndex int) {
 	buffer := make([]byte, 10)
 
+	fp, _ := os.OpenFile("../../files/receive.txt", os.O_CREATE|os.O_WRONLY, 0777)
+
+	defer fp.Close()
+
 	for {
 		c, e := conn.Read(buffer)
 		if e != nil {
 			if e == io.EOF {
-				fmt.Printf("Client %d disconnected!!\n", clientIndex)
+				fp.Write(buffer[0:c])
+				log.Printf("\nClient %d disconnected!!\n", clientIndex)
 				break
 			} else {
 				break
 			}
-		}
-
-		if c > 0 && buffer[c-1] == 10 {
-			fmt.Printf("%s", buffer[0:c-1])
-			fmt.Printf("\t[From client %d]\n", clientIndex)
 		} else {
-			fmt.Printf("%s", buffer[0:c])
+			fp.Write(buffer[0:c])
 		}
 	}
-
 }

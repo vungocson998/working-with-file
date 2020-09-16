@@ -28,9 +28,9 @@ func main() {
 				} else {
 					log.Println("-> Send data successfully")
 				}
-				log.Printf("End of file")
+				log.Println("End of file")
 			} else {
-				log.Printf("Error while reading file!")
+				log.Println("Error while reading file!")
 			}
 			break
 		}
@@ -43,5 +43,6 @@ func main() {
 		}
 	}
 
+	fp.Close()
 	fmt.Printf("-> Close\n")
 }
