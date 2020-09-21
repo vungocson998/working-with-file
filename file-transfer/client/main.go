@@ -14,7 +14,13 @@ func main() {
 
 	conn, _ := net.DialTCP("tcp", nil, addr)
 
-	fp, _ := os.OpenFile("../../files/demo.txt", os.O_RDONLY, 0777)
+	fileTransfer("../../files/demo.txt", conn)
+
+	fmt.Printf("-> Close\n")
+}
+
+func fileTransfer(filePath string, conn *net.TCPConn) {
+	fp, _ := os.OpenFile(filePath, os.O_RDONLY, 0777)
 
 	buffer := make([]byte, 10)
 
@@ -44,5 +50,4 @@ func main() {
 	}
 
 	fp.Close()
-	fmt.Printf("-> Close\n")
 }
