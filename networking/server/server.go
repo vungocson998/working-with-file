@@ -52,8 +52,7 @@ func handleConn(conn *net.TCPConn, clientIndex int) {
 			switch cmd[0] {
 			case "SEND":
 				log.Println("Handling SEND cmd")
-				go handleSend(conn, clientIndex, cmd[1], size)
-				cmd = nil
+				handleSend(conn, clientIndex, cmd[1], size)
 			}
 
 		} else {
