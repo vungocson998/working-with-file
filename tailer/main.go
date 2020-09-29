@@ -10,6 +10,8 @@ import (
 func main() {
 	n, _ := strconv.Atoi(os.Args[1])
 
+	filePath := os.Args[2]
+
 	fmt.Printf("Last %d lines :\n\n", n)
 
 	var num int
@@ -17,7 +19,7 @@ func main() {
 	var prevIsBreak bool = true
 	buffer := make([]byte, 1)
 
-	f, _ := os.OpenFile("../files/demo.txt", os.O_RDONLY, 0777)
+	f, _ := os.OpenFile(filePath, os.O_RDONLY, 0777)
 
 	f.Seek(0, 2)
 
