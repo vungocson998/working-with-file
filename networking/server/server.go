@@ -44,14 +44,18 @@ func handleConn(conn *net.TCPConn, clientIndex int) {
 
 		if c > 0 && buffer[c-1] == 10 {
 			cmdRecv = cmdRecv + string(buffer[0:c-1])
+			// LOGGING
 			// fmt.Printf("%s", buffer[0:c-1])
 			// fmt.Printf("\t[From client %d]\n", clientIndex)
 			// fmt.Printf("MESSAGE: %s\n", cmdRecv)
 			cmd := strings.Split(cmdRecv, " ")
 			size, _ := strconv.ParseInt(cmd[2], 10, 64)
+
+			// PROTOCOL
 			switch cmd[0] {
 			case "SEND":
 				log.Println("Handling SEND cmd")
+				//BUG: go handleSend(conn, clientIndex, cmd[1], size)
 				handleSend(conn, clientIndex, cmd[1], size)
 			}
 
