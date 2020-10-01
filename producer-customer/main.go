@@ -18,13 +18,15 @@ func main() {
 
 	run := true
 	var myOption int
-	myChannel := make(chan int, channelSize)
 	var numProd, numCon int
 	var channelIsEmpty bool = true
 	var channelIsFull bool = false
 
-	for run == true {
+	// This is SHARED BUFFER
+	myChannel := make(chan int, channelSize)
 
+	for run == true {
+		// Create a terminal interface
 		fmt.Println("1. Produce a number")
 		fmt.Println("2. Consume a number")
 		fmt.Println("3. Exit")
@@ -61,6 +63,7 @@ func main() {
 	}
 }
 
+// Producer problems: detect if buffer is empty to produce product, notify if buffer is full after produce a product
 func produce(numProd int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool) {
 	myChannel <- numProd
 	*channelIsEmpty = false
@@ -70,6 +73,7 @@ func produce(numProd int, myChannel chan int, channelIsFull *bool, channelIsEmpt
 	defer printChannel(myChannel)
 }
 
+// Customer problems: detect if buffer is not empty to use, notify if buffer is empty after use product
 func consume(numCon *int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool) {
 	x := <-myChannel
 	*numCon = x
