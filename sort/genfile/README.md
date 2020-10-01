@@ -6,7 +6,10 @@ go build .
 
 Generate n random integer numbers greater than zero to a file, separated by "\t"
 
-  -file string
+    -file string
+
     	where you want to save your file (default "../../files/input.txt")
-  -n int
+
+    -n int
+    
     	amount of numbers you want to generate to the file (default 10000)
