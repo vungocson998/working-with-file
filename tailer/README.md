@@ -1,3 +1,13 @@
-I have a test file at "../files/receive.txt"
+# Build tailer
 
-Run: go run main.go <number of last lines> <file path>
+go build .
+
+# Usage of ./tailer:
+
+  -file string
+
+    	path to the file (default "../files/receive.txt")
+
+  -n int
+
+    	number of last lines you want to print out (default 1)

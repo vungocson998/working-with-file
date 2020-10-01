@@ -1,14 +1,23 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 )
 
+func main() {
+	filePath := flag.String("file", "../files/receive.txt", "path to the file")
+	n := flag.Int("n", 1, "number of last lines you want to print out")
+	flag.Parse()
+
+	tailer(*n, *filePath)
+
+}
+
 func tailer(n int, filePath string) {
-	fmt.Printf("Last %d lines :\n\n", n)
+	fmt.Printf("Last %d lines of %s:\n\n", n, filePath)
 
 	var num int
 	var i int64
@@ -17,6 +26,7 @@ func tailer(n int, filePath string) {
 
 	// Open and move fseek to the end of file
 	f, _ := os.OpenFile(filePath, os.O_RDONLY, 0777)
+	defer f.Close()
 	f.Seek(0, 2)
 
 	num = 0 // Used to track if detected line number = expected lines number
@@ -26,7 +36,6 @@ func tailer(n int, filePath string) {
 	for num < n {
 		f.Seek(-i, 2)
 		f.Read(buffer)
-
 		if buffer[0] == byte(10) || buffer[0] == byte(13) {
 			// Used to detect \r\n or \n\r cases
 			if prevIsBreak {
@@ -40,7 +49,6 @@ func tailer(n int, filePath string) {
 		}
 		i++
 	}
-
 	// Print n lines
 	for true {
 		_, e := f.Read(buffer)
@@ -50,16 +58,5 @@ func tailer(n int, filePath string) {
 			fmt.Printf("%s", buffer)
 		}
 	}
-
 	fmt.Printf("\n")
-
-}
-
-func main() {
-	n, _ := strconv.Atoi(os.Args[1])
-
-	filePath := os.Args[2]
-
-	tailer(n, filePath)
-
 }
