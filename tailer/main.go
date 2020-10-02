@@ -27,10 +27,9 @@ func tailer(expectedLines int, filePath string) error {
 
 	var currentLines int = 0
 	var prevIsBreak bool = true
+	var offsetFromBottom int64 = 0
 	buffer := make([]byte, 1)
 
-	// After this loop file pointer will move to expectation position (in front of n last lines)
-	var offsetFromBottom int64 = 0
 	for currentLines < expectedLines {
 		f.Seek(-offsetFromBottom, 2)
 		f.Read(buffer)
