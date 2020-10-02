@@ -30,20 +30,20 @@ func tailer(expectedLines int, filePath string) error {
 	buffer := make([]byte, 1)
 
 	// After this loop file pointer will move to expectation position (in front of n last lines)
-	var i int64 = 0
+	var offsetFromBottom int64 = 0
 	for currentLines < expectedLines {
-		f.Seek(-i, 2)
+		f.Seek(-offsetFromBottom, 2)
 		f.Read(buffer)
 		if buffer[0] != EndOfLineChar1 && buffer[0] != EndOfLineChar2 {
 			prevIsBreak = false
-			i++
+			offsetFromBottom++
 			continue
 		}
 		if !prevIsBreak {
 			currentLines++
 			prevIsBreak = true
 		}
-		i++
+		offsetFromBottom++
 	}
 	fmt.Printf("Last %d lines of %s:\n\n", expectedLines, filePath)
 	for {
