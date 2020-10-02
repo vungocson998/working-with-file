@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 func main() {
 	var prods, cus, channelSize int
@@ -21,6 +24,7 @@ func main() {
 	var numProd, numCon int
 	var channelIsEmpty bool = true
 	var channelIsFull bool = false
+	var channelMutex sync.Mutex
 
 	// This is SHARED BUFFER
 	myChannel := make(chan int, channelSize)
@@ -37,21 +41,19 @@ func main() {
 			if channelIsFull == false {
 				fmt.Printf("You want to produce number: ")
 				fmt.Scanf("%d\n", &numProd)
-				go produce(numProd, myChannel, &channelIsFull, &channelIsEmpty)
+				go produce(numProd, myChannel, &channelIsFull, &channelIsEmpty, channelMutex)
 			} else {
 				fmt.Printf("Channel is full now!!\n")
 				printChannel(myChannel)
-
 			}
 			break
 		case 2:
 			if channelIsEmpty == false {
-				consume(&numCon, myChannel, &channelIsFull, &channelIsEmpty)
+				consume(&numCon, myChannel, &channelIsFull, &channelIsEmpty, channelMutex)
 				fmt.Printf("You consumed number: %d\n", numCon)
 			} else {
 				fmt.Printf("Channel is empty now!!\n")
 				printChannel(myChannel)
-
 			}
 			break
 		case 3:
@@ -59,30 +61,32 @@ func main() {
 			run = false
 			break
 		}
-
 	}
 }
 
 // Producer problems: detect if buffer is empty to produce product, notify if buffer is full after produce a product
-func produce(numProd int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool) {
+func produce(numProd int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool, channelMutex sync.Mutex) {
 	myChannel <- numProd
+	channelMutex.Lock()
+	defer channelMutex.Unlock()
 	*channelIsEmpty = false
 	if len(myChannel) == cap(myChannel) {
 		*channelIsFull = true
 	}
-	defer printChannel(myChannel)
+	printChannel(myChannel)
 }
 
 // Customer problems: detect if buffer is not empty to use, notify if buffer is empty after use product
-func consume(numCon *int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool) {
+func consume(numCon *int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool, channelMutex sync.Mutex) {
 	x := <-myChannel
+	channelMutex.Lock()
+	defer channelMutex.Unlock()
 	*numCon = x
 	*channelIsFull = false
 	if len(myChannel) == 0 {
 		*channelIsEmpty = true
 	}
-	defer printChannel(myChannel)
-
+	printChannel(myChannel)
 }
 
 func printChannel(myChannel chan int) {
