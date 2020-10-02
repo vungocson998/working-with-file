@@ -1,23 +1,19 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"sync"
 )
 
 func main() {
-	var prods, cus, channelSize int
 
-	fmt.Printf("Number of producers: ")
-	fmt.Scanf("%d\n", &prods)
+	prods := flag.Int("produders", 1, "number of producers")
+	cus := flag.Int("customers", 1, "number of customers")
+	channelSize := flag.Int("buffer", 1, "size of buffer")
+	flag.Parse()
 
-	fmt.Printf("Number of customers: ")
-	fmt.Scanf("%d\n", &cus)
-
-	fmt.Printf("Channel size: ")
-	fmt.Scanf("%d\n", &channelSize)
-
-	fmt.Printf("We now have %d producers, %d customers and channel size %d\n", prods, cus, channelSize)
+	fmt.Printf("We now have %d producers, %d customers and channel size %d\n", *prods, *cus, *channelSize)
 
 	run := true
 	var myOption int
@@ -27,7 +23,7 @@ func main() {
 	var channelMutex sync.Mutex
 
 	// This is SHARED BUFFER
-	myChannel := make(chan int, channelSize)
+	myChannel := make(chan int, *channelSize)
 
 	for run == true {
 		// Create a terminal interface
@@ -92,5 +88,4 @@ func consume(numCon *int, myChannel chan int, channelIsFull *bool, channelIsEmpt
 func printChannel(myChannel chan int) {
 	fmt.Printf("Channel has %d of %d elements", len(myChannel), cap(myChannel))
 	fmt.Printf("\n==================\n\n\n")
-
 }
