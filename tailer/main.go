@@ -8,20 +8,18 @@ import (
 )
 
 const (
-	EOL_CHAR_1 = byte('\n')
-	EOL_CHAR_2 = byte('\r')
+	EndOfLineChar1 = byte('\n')
+	EndOfLineChar2 = byte('\r')
 )
 
 func main() {
-	filePath := flag.String("file", "../files/receive.txt", "path to the file")
+	filePath := flag.String("file", "../files/receiver.txt", "path to the file")
 	n := flag.Int("n", 1, "number of last lines you want to print out")
 	flag.Parse()
 	tailer(*n, *filePath)
 }
 
 func tailer(n int, filePath string) {
-	fmt.Printf("Last %d lines of %s:\n\n", n, filePath)
-
 	var num int
 	var i int64
 	var prevIsBreak bool = true // Used to detect \r\n or \n\r cases
@@ -38,7 +36,7 @@ func tailer(n int, filePath string) {
 	for num < n {
 		f.Seek(-i, 2)
 		f.Read(buffer)
-		if buffer[0] != EOL_CHAR_1 && buffer[0] != EOL_CHAR_2 {
+		if buffer[0] != EndOfLineChar1 && buffer[0] != EndOfLineChar2 {
 			prevIsBreak = false
 			i++
 			continue
@@ -50,6 +48,7 @@ func tailer(n int, filePath string) {
 		i++
 	}
 	// Print n lines
+	fmt.Printf("Last %d lines of %s:\n\n", n, filePath)
 	for {
 		_, e := f.Read(buffer)
 		if e == io.EOF {
