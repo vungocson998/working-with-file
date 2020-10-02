@@ -3,89 +3,91 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"sync"
+	"time"
 )
 
-func main() {
+type product int
 
-	prods := flag.Int("produders", 1, "number of producers")
-	cus := flag.Int("customers", 1, "number of customers")
-	channelSize := flag.Int("buffer", 1, "size of buffer")
+type producer struct {
+	id int
+	product
+}
+
+type customer struct {
+	id int
+	product
+}
+
+func main() {
+	producersNumber := flag.Int("p", 1, "number of producers")
+	customersNumber := flag.Int("c", 1, "number of customers")
+	bufferSize := flag.Int("b", 1, "size of buffer")
 	flag.Parse()
 
-	fmt.Printf("We now have %d producers, %d customers and channel size %d\n", *prods, *cus, *channelSize)
+	producersList := initProducers(*producersNumber)
+	customersList := initCustomers(*customersNumber)
+	buffer := make(chan product, *bufferSize)
 
-	run := true
-	var myOption int
-	var numProd, numCon int
-	var channelIsEmpty bool = true
-	var channelIsFull bool = false
-	var channelMutex sync.Mutex
+	run(producersList, customersList, buffer)
 
-	// This is SHARED BUFFER
-	myChannel := make(chan int, *channelSize)
-
-	for run == true {
-		// Create a terminal interface
-		fmt.Println("1. Produce a number")
-		fmt.Println("2. Consume a number")
-		fmt.Println("3. Exit")
-		fmt.Println("Chose:")
-		fmt.Scanf("%d\n", &myOption)
-		switch myOption {
-		case 1:
-			if channelIsFull == false {
-				fmt.Printf("You want to produce number: ")
-				fmt.Scanf("%d\n", &numProd)
-				go produce(numProd, myChannel, &channelIsFull, &channelIsEmpty, channelMutex)
-			} else {
-				fmt.Printf("Channel is full now!!\n")
-				printChannel(myChannel)
-			}
-			break
-		case 2:
-			if channelIsEmpty == false {
-				consume(&numCon, myChannel, &channelIsFull, &channelIsEmpty, channelMutex)
-				fmt.Printf("You consumed number: %d\n", numCon)
-			} else {
-				fmt.Printf("Channel is empty now!!\n")
-				printChannel(myChannel)
-			}
-			break
-		case 3:
-			fmt.Println("Good bye!!")
-			run = false
-			break
+	for {
+		select {
+		default:
+			time.Sleep(time.Millisecond * 500)
+			// fmt.Printf("Main\n")
 		}
 	}
+
 }
 
-// Producer problems: detect if buffer is empty to produce product, notify if buffer is full after produce a product
-func produce(numProd int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool, channelMutex sync.Mutex) {
-	myChannel <- numProd
-	channelMutex.Lock()
-	defer channelMutex.Unlock()
-	*channelIsEmpty = false
-	if len(myChannel) == cap(myChannel) {
-		*channelIsFull = true
+func initProducers(number int) []producer {
+	producersList := make([]producer, number)
+	var id int = 0
+
+	for ; id < number; id++ {
+		producersList[id] = producer{id, product(rand.Intn(10000))}
 	}
-	printChannel(myChannel)
+	return producersList
 }
 
-// Customer problems: detect if buffer is not empty to use, notify if buffer is empty after use product
-func consume(numCon *int, myChannel chan int, channelIsFull *bool, channelIsEmpty *bool, channelMutex sync.Mutex) {
-	x := <-myChannel
-	channelMutex.Lock()
-	defer channelMutex.Unlock()
-	*numCon = x
-	*channelIsFull = false
-	if len(myChannel) == 0 {
-		*channelIsEmpty = true
+func initCustomers(number int) []customer {
+	customersList := make([]customer, number)
+	var id int = 0
+
+	for ; id < number; id++ {
+		customersList[id] = customer{id, 0}
 	}
-	printChannel(myChannel)
+	return customersList
 }
 
-func printChannel(myChannel chan int) {
-	fmt.Printf("Channel has %d of %d elements", len(myChannel), cap(myChannel))
-	fmt.Printf("\n==================\n\n\n")
+func produce(p *producer, buffer chan product, wg *sync.WaitGroup) {
+	defer wg.Done()
+	buffer <- p.product
+	fmt.Printf("Producer %d produced %d\n", p.id, p.product)
+	p.product = 0
+}
+
+func buy(c *customer, buffer chan product, wg *sync.WaitGroup) {
+	defer wg.Done()
+	fmt.Printf("Customer %d is waiting\n", c.id)
+	c.product = <-buffer
+	fmt.Printf("Customer %d bought %d\n", c.id, c.product)
+}
+
+func run(producers []producer, customers []customer, buffer chan product) {
+	var wg sync.WaitGroup
+
+	wg.Add(len(customers))
+	for j := range customers {
+		go buy(&customers[j], buffer, &wg)
+	}
+	// wg.Wait()
+
+	wg.Add(len(producers))
+	for i := range producers {
+		go produce(&producers[i], buffer, &wg)
+	}
+
 }
