@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 )
 
@@ -19,21 +18,20 @@ func main() {
 	tailer(*n, *filePath)
 }
 
-func tailer(n int, filePath string) {
-	var num int
-	var i int64
-	var prevIsBreak bool = true // Used to detect \r\n or \n\r cases
+func tailer(expectedLines int, filePath string) error {
+	f, err := os.OpenFile(filePath, os.O_RDONLY, 0777)
+	if err != nil {
+		return fmt.Errorf("can not open file, check if %s is a file or directory", filePath)
+	}
+	defer f.Close()
+
+	var currentLines int = 0
+	var prevIsBreak bool = true
 	buffer := make([]byte, 1)
 
-	f, _ := os.OpenFile(filePath, os.O_RDONLY, 0777)
-	defer f.Close()
-	f.Seek(0, 2)
-
-	num = 0 // Used to track if detected line number = expected lines number
-	i = 0
-
 	// After this loop file pointer will move to expectation position (in front of n last lines)
-	for num < n {
+	var i int64 = 0
+	for currentLines < expectedLines {
 		f.Seek(-i, 2)
 		f.Read(buffer)
 		if buffer[0] != EndOfLineChar1 && buffer[0] != EndOfLineChar2 {
@@ -42,19 +40,18 @@ func tailer(n int, filePath string) {
 			continue
 		}
 		if !prevIsBreak {
-			num++
+			currentLines++
 			prevIsBreak = true
 		}
 		i++
 	}
-	// Print n lines
-	fmt.Printf("Last %d lines of %s:\n\n", n, filePath)
+	fmt.Printf("Last %d lines of %s:\n\n", expectedLines, filePath)
 	for {
 		_, e := f.Read(buffer)
-		if e == io.EOF {
+		if e != nil {
 			break
 		}
 		fmt.Printf("%s", buffer)
 	}
-	fmt.Printf("\n")
+	return nil
 }
