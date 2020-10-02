@@ -9,6 +9,7 @@ import (
 const (
 	EndOfLineChar1 = byte('\n')
 	EndOfLineChar2 = byte('\r')
+	SeekFromBottom = 2
 )
 
 func main() {
@@ -31,7 +32,7 @@ func tailer(expectedLines int, filePath string) error {
 	buffer := make([]byte, 1)
 
 	for currentLines < expectedLines {
-		f.Seek(-offsetFromBottom, 2)
+		f.Seek(-offsetFromBottom, SeekFromBottom)
 		f.Read(buffer)
 		if buffer[0] != EndOfLineChar1 && buffer[0] != EndOfLineChar2 {
 			prevIsBreak = false
